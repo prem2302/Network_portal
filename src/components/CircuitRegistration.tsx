@@ -248,13 +248,13 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
           </Card>
 
           {/* Technical Details */}
-          <Card>
+          <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Technical Details</CardTitle>
               <CardDescription>VLAN, bandwidth, and infrastructure information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <Label htmlFor="vlan">VLAN ID *</Label>
                   <Input
@@ -278,9 +278,7 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
                   />
                   {errors.bandwidth && <p className="text-red-500 text-xs mt-1">{errors.bandwidth}</p>}
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="mux_id">MUX ID *</Label>
                   <Input
@@ -304,23 +302,6 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
                   />
                   {errors.port_id && <p className="text-red-500 text-xs mt-1">{errors.port_id}</p>}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Registration Summary</CardTitle>
-              <CardDescription>Review the information before submitting</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="text-sm">
-                <p><strong>Service Number:</strong> {formData.service_no || 'Not specified'}</p>
-                <p><strong>Client:</strong> {formData.client_name || 'Not specified'}</p>
-                <p><strong>Location:</strong> {formData.location || 'Not specified'}</p>
-                <p><strong>IP Address:</strong> {formData.client_ip || 'Not specified'}</p>
-                <p><strong>Bandwidth:</strong> {formData.bandwidth || 'Not specified'}</p>
               </div>
             </CardContent>
           </Card>
