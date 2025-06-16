@@ -82,7 +82,7 @@ const CircuitDetails = ({ circuit, onBack, onUpdate }: CircuitDetailsProps) => {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-slate-800">Circuit Details</h1>
-            <p className="text-slate-600">Service Number: {currentData.service_no}</p>
+            <p className="text-slate-600">Circuit ID: {currentData.circuit_id}</p>
           </div>
         </div>
         
@@ -116,25 +116,18 @@ const CircuitDetails = ({ circuit, onBack, onUpdate }: CircuitDetailsProps) => {
             <CardDescription>Core circuit identification and client details</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="circuit_id">Circuit ID</Label>
-                {isEditing ? (
-                  <Input
-                    id="circuit_id"
-                    value={currentData.circuit_id}
-                    onChange={(e) => handleFieldChange('circuit_id', e.target.value)}
-                    className="mt-1"
-                  />
-                ) : (
-                  <p className="mt-1 p-2 bg-slate-50 rounded border text-sm">{currentData.circuit_id}</p>
-                )}
-              </div>
-              
-              <div>
-                <Label htmlFor="service_no">Service Number</Label>
-                <p className="mt-1 p-2 bg-slate-50 rounded border text-sm">{currentData.service_no}</p>
-              </div>
+            <div>
+              <Label htmlFor="circuit_id">Circuit ID</Label>
+              {isEditing ? (
+                <Input
+                  id="circuit_id"
+                  value={currentData.circuit_id}
+                  onChange={(e) => handleFieldChange('circuit_id', e.target.value)}
+                  className="mt-1"
+                />
+              ) : (
+                <p className="mt-1 p-2 bg-slate-50 rounded border text-sm">{currentData.circuit_id}</p>
+              )}
             </div>
 
             <div>
@@ -233,16 +226,7 @@ const CircuitDetails = ({ circuit, onBack, onUpdate }: CircuitDetailsProps) => {
                 <p className="mt-1 p-2 bg-slate-50 rounded border text-sm font-mono">{currentData.dns}</p>
               )}
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Technical Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Technical Details</CardTitle>
-            <CardDescription>VLAN, bandwidth, and infrastructure information</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="vlan">VLAN ID</Label>
@@ -273,7 +257,16 @@ const CircuitDetails = ({ circuit, onBack, onUpdate }: CircuitDetailsProps) => {
                 )}
               </div>
             </div>
+          </CardContent>
+        </Card>
 
+        {/* Technical Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Technical Details</CardTitle>
+            <CardDescription>Infrastructure information</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="mux_id">MUX ID</Label>
@@ -318,19 +311,6 @@ const CircuitDetails = ({ circuit, onBack, onUpdate }: CircuitDetailsProps) => {
               <p className="mt-1 p-2 bg-slate-50 rounded border text-sm">
                 {new Date(currentData.last_updated).toLocaleString()}
               </p>
-            </div>
-            
-            <div>
-              <Label>Circuit Status</Label>
-              <div className="mt-1 flex items-center space-x-2">
-                <div className="h-3 w-3 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-green-700 font-medium">Active</span>
-              </div>
-            </div>
-
-            <div>
-              <Label>Uptime</Label>
-              <p className="mt-1 p-2 bg-slate-50 rounded border text-sm">99.8% (30 days)</p>
             </div>
           </CardContent>
         </Card>
