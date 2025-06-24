@@ -164,16 +164,16 @@ const Dashboard = () => {
         <CardHeader>
           <CardTitle>Circuit Search</CardTitle>
           <CardDescription>
-            Enter a service number to view and manage circuit configuration
+            Enter a circuit ID to view and manage circuit configuration
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
-              <Label htmlFor="service-search">Service Number</Label>
+              <Label htmlFor="service-search">Circuit ID</Label>
               <Input
                 id="service-search"
-                placeholder="Enter service number (e.g., SVC001)"
+                placeholder="Enter circuit ID (e.g., SVC001)"
                 value={serviceNumber}
                 onChange={(e) => setServiceNumber(e.target.value)}
                 onKeyPress={handleKeyPress}
