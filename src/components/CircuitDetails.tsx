@@ -117,20 +117,6 @@ const CircuitDetails = ({ circuit, onBack, onUpdate }: CircuitDetailsProps) => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="circuit_id">Circuit ID</Label>
-              {isEditing ? (
-                <Input
-                  id="circuit_id"
-                  value={currentData.circuit_id}
-                  onChange={(e) => handleFieldChange('circuit_id', e.target.value)}
-                  className="mt-1"
-                />
-              ) : (
-                <p className="mt-1 p-2 bg-slate-50 rounded border text-sm">{currentData.circuit_id}</p>
-              )}
-            </div>
-
-            <div>
               <Label htmlFor="client_name">Client Name</Label>
               {isEditing ? (
                 <Input
