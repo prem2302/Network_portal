@@ -14,8 +14,7 @@ interface CircuitRegistrationProps {
 }
 
 const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) => {
-  const [formData, setFormData] = useState<Omit<Circuit, 'last_updated'>>({
-    service_no: '',
+  const [formData, setFormData] = useState<Omit<Circuit, 'last_updated' | 'service_no'>>({
     circuit_id: '',
     client_name: '',
     client_ip: '',
@@ -37,7 +36,6 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
     const newErrors: Record<string, string> = {};
     
     // Required fields
-    if (!formData.service_no.trim()) newErrors.service_no = 'Service number is required';
     if (!formData.circuit_id.trim()) newErrors.circuit_id = 'Circuit ID is required';
     if (!formData.client_name.trim()) newErrors.client_name = 'Client name is required';
     if (!formData.client_ip.trim()) newErrors.client_ip = 'Client IP is required';
@@ -84,12 +82,13 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
     setTimeout(() => {
       const newCircuit: Circuit = {
         ...formData,
+        service_no: `SVC-${Date.now()}`, // Auto-generate service number
         last_updated: new Date().toISOString().slice(0, 19).replace('T', ' ')
       };
       
       toast({
         title: "Registration Successful",
-        description: `Circuit ${formData.service_no} has been registered successfully.`,
+        description: `Circuit ${formData.circuit_id} has been registered successfully.`,
       });
       
       onSuccess(newCircuit);
@@ -138,30 +137,16 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
               <CardDescription>Core circuit identification and client details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="service_no">Service Number *</Label>
-                  <Input
-                    id="service_no"
-                    value={formData.service_no}
-                    onChange={(e) => handleFieldChange('service_no', e.target.value)}
-                    placeholder="SVC001"
-                    className={`mt-1 ${errors.service_no ? 'border-red-500' : ''}`}
-                  />
-                  {errors.service_no && <p className="text-red-500 text-xs mt-1">{errors.service_no}</p>}
-                </div>
-                
-                <div>
-                  <Label htmlFor="circuit_id">Circuit ID *</Label>
-                  <Input
-                    id="circuit_id"
-                    value={formData.circuit_id}
-                    onChange={(e) => handleFieldChange('circuit_id', e.target.value)}
-                    placeholder="CIR-001-NYC"
-                    className={`mt-1 ${errors.circuit_id ? 'border-red-500' : ''}`}
-                  />
-                  {errors.circuit_id && <p className="text-red-500 text-xs mt-1">{errors.circuit_id}</p>}
-                </div>
+              <div>
+                <Label htmlFor="circuit_id">Circuit ID *</Label>
+                <Input
+                  id="circuit_id"
+                  value={formData.circuit_id}
+                  onChange={(e) => handleFieldChange('circuit_id', e.target.value)}
+                  placeholder="CIR-001-NYC"
+                  className={`mt-1 ${errors.circuit_id ? 'border-red-500' : ''}`}
+                />
+                {errors.circuit_id && <p className="text-red-500 text-xs mt-1">{errors.circuit_id}</p>}
               </div>
 
               <div>
