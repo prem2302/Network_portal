@@ -22,15 +22,6 @@ const CircuitDetails = ({ circuit, onBack, onUpdate }: CircuitDetailsProps) => {
   const { toast } = useToast();
 
   const handleSave = () => {
-    if (!editedCircuit.client_name.trim() || !editedCircuit.circuit_id.trim()) {
-      toast({
-        title: "Validation Error", 
-        description: "Client name and circuit ID are required fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsSaving(true);
 
     // Simulate API call
@@ -143,7 +134,7 @@ const CircuitDetails = ({ circuit, onBack, onUpdate }: CircuitDetailsProps) => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="client_ip">IP Addresses</Label>
+              <Label htmlFor="client_ip">Client IP Address</Label>
               {isEditing ? (
                 <Textarea
                   id="client_ip"
