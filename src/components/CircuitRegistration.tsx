@@ -27,6 +27,12 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
     mux_id: '',
     port_id: ''
   });
+
+  const [ipConfig, setIpConfig] = useState({
+    type: 'single', // 'single', 'lan', 'wan', 'both'
+    lanIp: '',
+    wanIp: ''
+  });
   
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -38,7 +44,6 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
     // Required fields
     if (!formData.circuit_id.trim()) newErrors.circuit_id = 'Circuit ID is required';
     if (!formData.client_name.trim()) newErrors.client_name = 'Client name is required';
-    if (!formData.client_ip.trim()) newErrors.client_ip = 'Client IP is required';
     if (!formData.gateway.trim()) newErrors.gateway = 'Gateway is required';
     if (!formData.vlan.trim()) newErrors.vlan = 'VLAN ID is required';
     if (!formData.bandwidth.trim()) newErrors.bandwidth = 'Bandwidth is required';
@@ -48,9 +53,33 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
 
     // IP address validation
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-    if (formData.client_ip && !ipRegex.test(formData.client_ip)) {
-      newErrors.client_ip = 'Please enter a valid IP address';
+    
+    if (ipConfig.type === 'single') {
+      if (!formData.client_ip.trim()) newErrors.client_ip = 'Client IP is required';
+      if (formData.client_ip && !ipRegex.test(formData.client_ip)) {
+        newErrors.client_ip = 'Please enter a valid IP address';
+      }
+    } else if (ipConfig.type === 'lan') {
+      if (!ipConfig.lanIp.trim()) newErrors.lanIp = 'LAN IP is required';
+      if (ipConfig.lanIp && !ipRegex.test(ipConfig.lanIp)) {
+        newErrors.lanIp = 'Please enter a valid LAN IP address';
+      }
+    } else if (ipConfig.type === 'wan') {
+      if (!ipConfig.wanIp.trim()) newErrors.wanIp = 'WAN IP is required';
+      if (ipConfig.wanIp && !ipRegex.test(ipConfig.wanIp)) {
+        newErrors.wanIp = 'Please enter a valid WAN IP address';
+      }
+    } else if (ipConfig.type === 'both') {
+      if (!ipConfig.lanIp.trim()) newErrors.lanIp = 'LAN IP is required';
+      if (!ipConfig.wanIp.trim()) newErrors.wanIp = 'WAN IP is required';
+      if (ipConfig.lanIp && !ipRegex.test(ipConfig.lanIp)) {
+        newErrors.lanIp = 'Please enter a valid LAN IP address';
+      }
+      if (ipConfig.wanIp && !ipRegex.test(ipConfig.wanIp)) {
+        newErrors.wanIp = 'Please enter a valid WAN IP address';
+      }
     }
+
     if (formData.gateway && !ipRegex.test(formData.gateway)) {
       newErrors.gateway = 'Please enter a valid gateway IP address';
     }
@@ -80,8 +109,21 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
 
     // Simulate API call
     setTimeout(() => {
+      // Determine client_ip based on selected configuration
+      let clientIp = '';
+      if (ipConfig.type === 'single') {
+        clientIp = formData.client_ip;
+      } else if (ipConfig.type === 'lan') {
+        clientIp = ipConfig.lanIp;
+      } else if (ipConfig.type === 'wan') {
+        clientIp = ipConfig.wanIp;
+      } else if (ipConfig.type === 'both') {
+        clientIp = `LAN: ${ipConfig.lanIp}, WAN: ${ipConfig.wanIp}`;
+      }
+
       const newCircuit: Circuit = {
         ...formData,
+        client_ip: clientIp,
         service_no: `SVC-${Date.now()}`, // Auto-generate service number
         last_updated: new Date().toISOString().slice(0, 19).replace('T', ' ')
       };
@@ -98,6 +140,21 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
 
   const handleFieldChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
+  };
+
+  const handleIpConfigChange = (field: string, value: string) => {
+    setIpConfig(prev => ({
       ...prev,
       [field]: value
     }));
@@ -182,17 +239,64 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
               <CardDescription>IP addressing and network parameters</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* IP Configuration Type */}
               <div>
-                <Label htmlFor="client_ip">Client IP Address *</Label>
-                <Input
-                  id="client_ip"
-                  value={formData.client_ip}
-                  onChange={(e) => handleFieldChange('client_ip', e.target.value)}
-                  placeholder="192.168.1.100"
-                  className={`mt-1 ${errors.client_ip ? 'border-red-500' : ''}`}
-                />
-                {errors.client_ip && <p className="text-red-500 text-xs mt-1">{errors.client_ip}</p>}
+                <Label htmlFor="ip_type">IP Configuration Type *</Label>
+                <select
+                  id="ip_type"
+                  value={ipConfig.type}
+                  onChange={(e) => handleIpConfigChange('type', e.target.value)}
+                  className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="single">Single IP Address</option>
+                  <option value="lan">LAN IP Only</option>
+                  <option value="wan">WAN IP Only</option>
+                  <option value="both">Both LAN & WAN</option>
+                </select>
               </div>
+
+              {/* IP Address Fields */}
+              {ipConfig.type === 'single' && (
+                <div>
+                  <Label htmlFor="client_ip">Client IP Address *</Label>
+                  <Input
+                    id="client_ip"
+                    value={formData.client_ip}
+                    onChange={(e) => handleFieldChange('client_ip', e.target.value)}
+                    placeholder="192.168.1.100"
+                    className={`mt-1 ${errors.client_ip ? 'border-red-500' : ''}`}
+                  />
+                  {errors.client_ip && <p className="text-red-500 text-xs mt-1">{errors.client_ip}</p>}
+                </div>
+              )}
+
+              {(ipConfig.type === 'lan' || ipConfig.type === 'both') && (
+                <div>
+                  <Label htmlFor="lan_ip">LAN IP Address *</Label>
+                  <Input
+                    id="lan_ip"
+                    value={ipConfig.lanIp}
+                    onChange={(e) => handleIpConfigChange('lanIp', e.target.value)}
+                    placeholder="192.168.1.100"
+                    className={`mt-1 ${errors.lanIp ? 'border-red-500' : ''}`}
+                  />
+                  {errors.lanIp && <p className="text-red-500 text-xs mt-1">{errors.lanIp}</p>}
+                </div>
+              )}
+
+              {(ipConfig.type === 'wan' || ipConfig.type === 'both') && (
+                <div>
+                  <Label htmlFor="wan_ip">WAN IP Address *</Label>
+                  <Input
+                    id="wan_ip"
+                    value={ipConfig.wanIp}
+                    onChange={(e) => handleIpConfigChange('wanIp', e.target.value)}
+                    placeholder="203.0.113.100"
+                    className={`mt-1 ${errors.wanIp ? 'border-red-500' : ''}`}
+                  />
+                  {errors.wanIp && <p className="text-red-500 text-xs mt-1">{errors.wanIp}</p>}
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
