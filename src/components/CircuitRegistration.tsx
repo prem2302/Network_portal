@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save, X } from 'lucide-react';
+import { ArrowLeft, Save, X, Plus, Minus } from 'lucide-react';
 import { Circuit } from './Dashboard';
 import { useToast } from '@/hooks/use-toast';
 
@@ -30,13 +30,77 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
 
   const [ipConfig, setIpConfig] = useState({
     type: 'single', // 'single', 'lan', 'wan', 'both'
-    lanIp: '',
-    wanIp: ''
+    lanIps: [''],
+    wanIps: ['']
   });
   
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+
+  const addLanIp = () => {
+    setIpConfig(prev => ({
+      ...prev,
+      lanIps: [...prev.lanIps, '']
+    }));
+  };
+
+  const addWanIp = () => {
+    setIpConfig(prev => ({
+      ...prev,
+      wanIps: [...prev.wanIps, '']
+    }));
+  };
+
+  const removeLanIp = (index: number) => {
+    if (ipConfig.lanIps.length > 1) {
+      setIpConfig(prev => ({
+        ...prev,
+        lanIps: prev.lanIps.filter((_, i) => i !== index)
+      }));
+    }
+  };
+
+  const removeWanIp = (index: number) => {
+    if (ipConfig.wanIps.length > 1) {
+      setIpConfig(prev => ({
+        ...prev,
+        wanIps: prev.wanIps.filter((_, i) => i !== index)
+      }));
+    }
+  };
+
+  const updateLanIp = (index: number, value: string) => {
+    setIpConfig(prev => ({
+      ...prev,
+      lanIps: prev.lanIps.map((ip, i) => i === index ? value : ip)
+    }));
+    
+    // Clear error when user starts typing
+    const errorKey = `lanIp_${index}`;
+    if (errors[errorKey]) {
+      setErrors(prev => ({
+        ...prev,
+        [errorKey]: ''
+      }));
+    }
+  };
+
+  const updateWanIp = (index: number, value: string) => {
+    setIpConfig(prev => ({
+      ...prev,
+      wanIps: prev.wanIps.map((ip, i) => i === index ? value : ip)
+    }));
+    
+    // Clear error when user starts typing
+    const errorKey = `wanIp_${index}`;
+    if (errors[errorKey]) {
+      setErrors(prev => ({
+        ...prev,
+        [errorKey]: ''
+      }));
+    }
+  };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -59,25 +123,26 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
       if (formData.client_ip && !ipRegex.test(formData.client_ip)) {
         newErrors.client_ip = 'Please enter a valid IP address';
       }
-    } else if (ipConfig.type === 'lan') {
-      if (!ipConfig.lanIp.trim()) newErrors.lanIp = 'LAN IP is required';
-      if (ipConfig.lanIp && !ipRegex.test(ipConfig.lanIp)) {
-        newErrors.lanIp = 'Please enter a valid LAN IP address';
-      }
-    } else if (ipConfig.type === 'wan') {
-      if (!ipConfig.wanIp.trim()) newErrors.wanIp = 'WAN IP is required';
-      if (ipConfig.wanIp && !ipRegex.test(ipConfig.wanIp)) {
-        newErrors.wanIp = 'Please enter a valid WAN IP address';
-      }
-    } else if (ipConfig.type === 'both') {
-      if (!ipConfig.lanIp.trim()) newErrors.lanIp = 'LAN IP is required';
-      if (!ipConfig.wanIp.trim()) newErrors.wanIp = 'WAN IP is required';
-      if (ipConfig.lanIp && !ipRegex.test(ipConfig.lanIp)) {
-        newErrors.lanIp = 'Please enter a valid LAN IP address';
-      }
-      if (ipConfig.wanIp && !ipRegex.test(ipConfig.wanIp)) {
-        newErrors.wanIp = 'Please enter a valid WAN IP address';
-      }
+    } else if (ipConfig.type === 'lan' || ipConfig.type === 'both') {
+      ipConfig.lanIps.forEach((ip, index) => {
+        const errorKey = `lanIp_${index}`;
+        if (!ip.trim()) {
+          newErrors[errorKey] = 'LAN IP is required';
+        } else if (!ipRegex.test(ip)) {
+          newErrors[errorKey] = 'Please enter a valid LAN IP address';
+        }
+      });
+    }
+    
+    if (ipConfig.type === 'wan' || ipConfig.type === 'both') {
+      ipConfig.wanIps.forEach((ip, index) => {
+        const errorKey = `wanIp_${index}`;
+        if (!ip.trim()) {
+          newErrors[errorKey] = 'WAN IP is required';
+        } else if (!ipRegex.test(ip)) {
+          newErrors[errorKey] = 'Please enter a valid WAN IP address';
+        }
+      });
     }
 
     if (formData.gateway && !ipRegex.test(formData.gateway)) {
@@ -114,11 +179,13 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
       if (ipConfig.type === 'single') {
         clientIp = formData.client_ip;
       } else if (ipConfig.type === 'lan') {
-        clientIp = ipConfig.lanIp;
+        clientIp = `LAN: ${ipConfig.lanIps.filter(ip => ip.trim()).join(', ')}`;
       } else if (ipConfig.type === 'wan') {
-        clientIp = ipConfig.wanIp;
+        clientIp = `WAN: ${ipConfig.wanIps.filter(ip => ip.trim()).join(', ')}`;
       } else if (ipConfig.type === 'both') {
-        clientIp = `LAN: ${ipConfig.lanIp}, WAN: ${ipConfig.wanIp}`;
+        const lanIps = ipConfig.lanIps.filter(ip => ip.trim()).join(', ');
+        const wanIps = ipConfig.wanIps.filter(ip => ip.trim()).join(', ');
+        clientIp = `LAN: ${lanIps}, WAN: ${wanIps}`;
       }
 
       const newCircuit: Circuit = {
@@ -153,19 +220,25 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
     }
   };
 
-  const handleIpConfigChange = (field: string, value: string) => {
+  const handleIpConfigTypeChange = (value: string) => {
     setIpConfig(prev => ({
       ...prev,
-      [field]: value
+      type: value,
+      // Reset arrays when changing type
+      lanIps: [''],
+      wanIps: ['']
     }));
     
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({
-        ...prev,
-        [field]: ''
-      }));
-    }
+    // Clear all IP-related errors
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      Object.keys(newErrors).forEach(key => {
+        if (key.startsWith('lanIp_') || key.startsWith('wanIp_') || key === 'client_ip') {
+          delete newErrors[key];
+        }
+      });
+      return newErrors;
+    });
   };
 
   return (
@@ -245,7 +318,7 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
                 <select
                   id="ip_type"
                   value={ipConfig.type}
-                  onChange={(e) => handleIpConfigChange('type', e.target.value)}
+                  onChange={(e) => handleIpConfigTypeChange(e.target.value)}
                   className="mt-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <option value="single">Single IP Address</option>
@@ -272,29 +345,99 @@ const CircuitRegistration = ({ onCancel, onSuccess }: CircuitRegistrationProps) 
 
               {(ipConfig.type === 'lan' || ipConfig.type === 'both') && (
                 <div>
-                  <Label htmlFor="lan_ip">LAN IP Address *</Label>
-                  <Input
-                    id="lan_ip"
-                    value={ipConfig.lanIp}
-                    onChange={(e) => handleIpConfigChange('lanIp', e.target.value)}
-                    placeholder="192.168.1.100"
-                    className={`mt-1 ${errors.lanIp ? 'border-red-500' : ''}`}
-                  />
-                  {errors.lanIp && <p className="text-red-500 text-xs mt-1">{errors.lanIp}</p>}
+                  <div className="flex items-center justify-between mb-2">
+                    <Label>LAN IP Addresses *</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addLanIp}
+                      className="h-8 px-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {ipConfig.lanIps.map((ip, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <Input
+                          value={ip}
+                          onChange={(e) => updateLanIp(index, e.target.value)}
+                          placeholder={`192.168.1.${100 + index}`}
+                          className={`flex-1 ${errors[`lanIp_${index}`] ? 'border-red-500' : ''}`}
+                        />
+                        {ipConfig.lanIps.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeLanIp(index)}
+                            className="h-10 px-2"
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    {ipConfig.lanIps.some((_, index) => errors[`lanIp_${index}`]) && (
+                      <div className="space-y-1">
+                        {ipConfig.lanIps.map((_, index) => 
+                          errors[`lanIp_${index}`] && (
+                            <p key={index} className="text-red-500 text-xs">{errors[`lanIp_${index}`]}</p>
+                          )
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
               {(ipConfig.type === 'wan' || ipConfig.type === 'both') && (
                 <div>
-                  <Label htmlFor="wan_ip">WAN IP Address *</Label>
-                  <Input
-                    id="wan_ip"
-                    value={ipConfig.wanIp}
-                    onChange={(e) => handleIpConfigChange('wanIp', e.target.value)}
-                    placeholder="203.0.113.100"
-                    className={`mt-1 ${errors.wanIp ? 'border-red-500' : ''}`}
-                  />
-                  {errors.wanIp && <p className="text-red-500 text-xs mt-1">{errors.wanIp}</p>}
+                  <div className="flex items-center justify-between mb-2">
+                    <Label>WAN IP Addresses *</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addWanIp}
+                      className="h-8 px-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {ipConfig.wanIps.map((ip, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <Input
+                          value={ip}
+                          onChange={(e) => updateWanIp(index, e.target.value)}
+                          placeholder={`203.0.113.${100 + index}`}
+                          className={`flex-1 ${errors[`wanIp_${index}`] ? 'border-red-500' : ''}`}
+                        />
+                        {ipConfig.wanIps.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeWanIp(index)}
+                            className="h-10 px-2"
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    {ipConfig.wanIps.some((_, index) => errors[`wanIp_${index}`]) && (
+                      <div className="space-y-1">
+                        {ipConfig.wanIps.map((_, index) => 
+                          errors[`wanIp_${index}`] && (
+                            <p key={index} className="text-red-500 text-xs">{errors[`wanIp_${index}`]}</p>
+                          )
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
