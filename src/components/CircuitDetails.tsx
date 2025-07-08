@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -136,18 +135,17 @@ const CircuitDetails = ({ circuit, onBack, onUpdate }: CircuitDetailsProps) => {
             <div>
               <Label htmlFor="client_ip">Client IP Address</Label>
               {isEditing ? (
-                <Textarea
+                <Input
                   id="client_ip"
                   value={currentData.client_ip}
                   onChange={(e) => handleFieldChange('client_ip', e.target.value)}
-                  placeholder="Enter IP addresses"
+                  placeholder="Enter IP address"
                   className="mt-1"
-                  rows={3}
                 />
               ) : (
-                <div className="mt-1 p-2 bg-slate-50 rounded border text-sm font-mono whitespace-pre-wrap">
+                <p className="mt-1 p-2 bg-slate-50 rounded border text-sm font-mono">
                   {currentData.client_ip}
-                </div>
+                </p>
               )}
             </div>
 
