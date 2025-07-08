@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Edit, Save, X } from 'lucide-react';
 import { Circuit } from './Dashboard';
 import { useToast } from '@/hooks/use-toast';
@@ -21,18 +22,6 @@ const CircuitDetails = ({ circuit, onBack, onUpdate }: CircuitDetailsProps) => {
   const { toast } = useToast();
 
   const handleSave = () => {
-    // Validate IP addresses
-    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-    
-    if (!ipRegex.test(editedCircuit.client_ip)) {
-      toast({
-        title: "Validation Error",
-        description: "Please enter a valid IP address format.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (!editedCircuit.client_name.trim() || !editedCircuit.circuit_id.trim()) {
       toast({
         title: "Validation Error", 
@@ -154,17 +143,20 @@ const CircuitDetails = ({ circuit, onBack, onUpdate }: CircuitDetailsProps) => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="client_ip">Client IP Address</Label>
+              <Label htmlFor="client_ip">IP Addresses</Label>
               {isEditing ? (
-                <Input
+                <Textarea
                   id="client_ip"
                   value={currentData.client_ip}
                   onChange={(e) => handleFieldChange('client_ip', e.target.value)}
-                  placeholder="192.168.1.100"
+                  placeholder="Enter IP addresses"
                   className="mt-1"
+                  rows={3}
                 />
               ) : (
-                <p className="mt-1 p-2 bg-slate-50 rounded border text-sm font-mono">{currentData.client_ip}</p>
+                <div className="mt-1 p-2 bg-slate-50 rounded border text-sm font-mono whitespace-pre-wrap">
+                  {currentData.client_ip}
+                </div>
               )}
             </div>
 
